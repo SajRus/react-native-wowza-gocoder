@@ -5,8 +5,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.wowza.gocoder.sdk.api.status.WZState;
-import com.wowza.gocoder.sdk.api.status.WZStatus;
+import com.wowza.gocoder.sdk.support.status.WOWZState;
+import com.wowza.gocoder.sdk.support.status.WOWZStatus;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,17 +33,17 @@ public class RCTBroadcastModule extends ReactContextBaseJavaModule {
         this.reactContext = context;
     }
 
-    public static String getStatusString(WZStatus status){
+    public static String getStatusString(WOWZStatus status){
         switch (status.getState()){
-            case WZState.IDLE:
+            case WOWZState.IDLE:
                 return "idle";
-            case WZState.PAUSED:
+            case WOWZState.PAUSED:
                 return "paused";
-            case WZState.READY:
+            case WOWZState.READY:
                 return "ready";
-            case WZState.RUNNING:
+            case WOWZState.RUNNING:
                 return "running";
-            case WZState.STARTING:
+            case WOWZState.STARTING:
                 return "starting";
 
         }

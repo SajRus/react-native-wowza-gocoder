@@ -2,23 +2,31 @@ package com.rngocoder;
 
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.util.Log;
+
+import androidx.core.view.GestureDetectorCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.wowza.gocoder.sdk.api.broadcast.WZBroadcast;
-import com.wowza.gocoder.sdk.api.broadcast.WZBroadcastConfig;
-import com.wowza.gocoder.sdk.api.devices.WZAudioDevice;
-import com.wowza.gocoder.sdk.api.devices.WZCameraView;
-import com.wowza.gocoder.sdk.api.status.WZState;
-import com.wowza.gocoder.sdk.api.status.WZStatus;
-import com.wowza.gocoder.sdk.api.status.WZStatusCallback;
-
-import android.support.v4.view.GestureDetectorCompat;
-import com.wowza.gocoder.sdk.api.devices.WZCamera;
-
+import com.wowza.gocoder.sdk.api.broadcast.WOWZBroadcast;
+import com.wowza.gocoder.sdk.api.broadcast.WOWZBroadcastConfig;
+import com.wowza.gocoder.sdk.api.configuration.WOWZMediaConfig;
+import com.wowza.gocoder.sdk.api.devices.WOWZAudioDevice;
+import com.wowza.gocoder.sdk.api.devices.WOWZCamera;
+import com.wowza.gocoder.sdk.api.devices.WOWZCameraView;
+import com.wowza.gocoder.sdk.api.errors.WOWZError;
+import com.wowza.gocoder.sdk.api.geometry.WOWZSize;
+import com.wowza.gocoder.sdk.api.status.WOWZBroadcastStatus;
+import com.wowza.gocoder.sdk.support.status.WOWZState;
+import com.wowza.gocoder.sdk.support.status.WOWZStatus;
+import com.wowza.gocoder.sdk.support.status.WOWZStatusCallback;
+import com.wowza.gocoder.sdk.api.status.WOWZBroadcastStatusCallback;
+import com.wowza.gocoder.sdk.api.logging.WOWZLog;
+import com.wowza.gocoder.sdk.api.status.WOWZBroadcastStatus.BroadcastState;
+import com.wowza.gocoder.sdk.api.WowzaGoCoder;
 
 /**
  * Created by hugonagano on 11/7/16.
@@ -46,10 +54,12 @@ public class BroadcastView extends FrameLayout implements LifecycleEventListener
         }
     }
 
-    private WZBroadcast broadcast;
-    private WZBroadcastConfig broadcastConfig;
-    private WZAudioDevice audioDevice;
-    private WZCameraView cameraView;
+    private WOWZBroadcast broadcast;
+    private WOWZBroadcastConfig broadcastConfig;
+    private WOWZAudioDevice audioDevice;
+
+    // The GoCoder SDK camera preview display view
+    private WOWZCameraView mWZCameraView  = null;
     private ThemedReactContext localContext;
     private String sdkLicenseKey;
     private String hostAddress;
@@ -65,67 +75,103 @@ public class BroadcastView extends FrameLayout implements LifecycleEventListener
     private boolean muted = false;
     private int sizePreset;
     protected GestureDetectorCompat mAutoFocusDetector = null;
+    private final static String TAG = BroadcastView.class.getSimpleName();
+
     
     public BroadcastView(ThemedReactContext context){
         super(context);
 
         localContext = context;
         mEventEmitter = localContext.getJSModule(RCTEventEmitter.class);
-        audioDevice = new WZAudioDevice();
-        cameraView = new WZCameraView(context);
-        broadcast = new WZBroadcast();
+        audioDevice = new WOWZAudioDevice();
+        mWZCameraView = new WOWZCameraView(context);
+        broadcast = new WOWZBroadcast();
         localContext.addLifecycleEventListener(this);
-        cameraView.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        cameraView.getCamera().setTorchOn(false);
-        this.addView(cameraView);
+        mWZCameraView.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mWZCameraView.getCamera().setTorchOn(false);
+        this.addView(mWZCameraView);
     }
 
     @Override
     public void onHostDestroy() {
-        if(this.cameraView != null) {
+        if(this.mWZCameraView != null) {
             this.stopCamera();
+            Log.d("ReactNative", "onHostDestroy");
         }
     }
 
     @Override
     public void onHostPause() {
-        if(this.cameraView != null){
-            this.cameraView.stopPreview();
+        if(this.mWZCameraView != null){
+            this.mWZCameraView.stopPreview();
+            Log.d("ReactNative",
+                    "onHostPause");
         }
     }
 
     @Override
     public void onHostResume() {
-        if(broadcastConfig == null && cameraView != null) {
-            broadcastConfig = BroadcastManager.initBroadcast(localContext, getHostAddress(), getApplicationName(), getBroadcastName(), getSdkLicenseKey(), getUsername(), getPassword(), getSizePreset(), getVideoOrientation(), cameraView, audioDevice);
+
+
+        if(broadcastConfig == null && this.mWZCameraView != null) {
+            broadcastConfig = BroadcastManager.initBroadcast(
+                localContext, 
+                getHostAddress(), 
+                getApplicationName(), 
+                getBroadcastName(), 
+                getSdkLicenseKey(), 
+                getUsername(), 
+                getPassword(), 
+                getSizePreset(), 
+                getVideoOrientation(), 
+                this.mWZCameraView, 
+                audioDevice
+            );
+            this.mWZCameraView.setCameraConfig(broadcastConfig);
+            Log.d("ReactNative", "Init Broadcasting config: "+String.valueOf(broadcastConfig));
         }
 
-        if(cameraView != null){
-            cameraView.startPreview();
+        if(this.mWZCameraView != null){
+            Log.d("ReactNative", "Camera status: "+String.valueOf(this.mWZCameraView.getPreviewStatus()));
+            // WOWZCameraView: The GoCoder SDK must be initialized before starting the camera preview
+
+            this.mWZCameraView.startPreview();
+            // Enable the switch camera button if more than one camera is available
+            int numCameras = WOWZCamera.getNumberOfDeviceCameras(localContext);
+            Log.d("ReactNative", "Number of cameras: "+String.valueOf(numCameras));
+            Log.d("ReactNative", "Camera is previewing: "+String.valueOf(this.mWZCameraView.isPreviewing()));
+
         }
 
-        if (broadcastConfig != null && cameraView != null) {
+        if (broadcastConfig != null && this.mWZCameraView != null) {
             if (mAutoFocusDetector == null)
-                mAutoFocusDetector = new GestureDetectorCompat(localContext, new AutoFocusListener(localContext, cameraView));
+                mAutoFocusDetector = new GestureDetectorCompat(localContext, new AutoFocusListener(localContext, mWZCameraView));
 
-            WZCamera activeCamera = cameraView.getCamera();
-            if (activeCamera != null && activeCamera.hasCapability(WZCamera.FOCUS_MODE_CONTINUOUS))
-                activeCamera.setFocusMode(WZCamera.FOCUS_MODE_CONTINUOUS);
+
+            WOWZCamera activeCamera = this.mWZCameraView.getCamera();
+
+            if (activeCamera != null && activeCamera.hasCapability(WOWZCamera.FOCUS_MODE_CONTINUOUS))
+                activeCamera.setFocusMode(WOWZCamera.FOCUS_MODE_CONTINUOUS);
         }
+
+        WOWZStatus mGoCoder = this.mWZCameraView.getBroadcasterStatus();
+        // Get the SDK status and check for an error
+        Log.d("ReactNative", "WOWZStatus : "+String.valueOf(mGoCoder));
+
     }
-    
+
 
     public void setCameraType(Integer cameraType) {
-        this.cameraView.setCamera(cameraType);
+        this.mWZCameraView.setCamera(cameraType);
     }
 
     public void setFlash(boolean flag) {
-        this.cameraView.getCamera().setTorchOn(flag);
+        this.mWZCameraView.getCamera().setTorchOn(flag);
     }
 
     public void stopCamera() {
-        this.cameraView.stopPreview();
-        this.cameraView = null;
+        this.mWZCameraView.stopPreview();
+        this.mWZCameraView = null;
     }
 
 
@@ -200,64 +246,72 @@ public class BroadcastView extends FrameLayout implements LifecycleEventListener
 
     public void setBroadcasting(boolean broadcasting) {
 
-        WZCamera activeCamera = this.cameraView.getCamera();
-        if (activeCamera != null && activeCamera.hasCapability(WZCamera.FOCUS_MODE_CONTINUOUS))
-            activeCamera.setFocusMode(WZCamera.FOCUS_MODE_CONTINUOUS);
+        WOWZCamera activeCamera = this.mWZCameraView.getCamera();
+        if (activeCamera != null && activeCamera.hasCapability(WOWZCamera.FOCUS_MODE_CONTINUOUS))
+            activeCamera.setFocusMode(WOWZCamera.FOCUS_MODE_CONTINUOUS);
             
         if(broadcastConfig == null){
             return;
         }
 
-        if(!this.isBroadcasting()){
-            BroadcastManager.startBroadcast(broadcast, broadcastConfig, new WZStatusCallback(){
+        if(!broadcast.getStatus().isBroadcasting()){
+            BroadcastManager.startBroadcast(broadcast, broadcastConfig, new WOWZBroadcastStatusCallback(){
+
+
                 @Override
-                public void onWZStatus(WZStatus wzStatus) {
-                    if(wzStatus.getState() == WZState.RUNNING){
+                public void onWZStatus(WOWZBroadcastStatus wowzBroadcastStatus) {
+                    Log.d("ReactNative", String.format("WOWZStatus onWZStatus: %s", wowzBroadcastStatus));
+                    if(wowzBroadcastStatus.isBroadcasting()) {
                         WritableMap event = Arguments.createMap();
-                        WritableMap broadcast = Arguments.createMap();
-                        broadcast.putString("host", getHostAddress());
-                        broadcast.putString("broadcastName", getBroadcastName());
-                        event.putMap("event", broadcast);
+                        WritableMap broadcastEventState = Arguments.createMap();
+                        broadcastEventState.putString("status", "started");
                         mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_START.toString(), event);
-                    }
-                }
-
-                @Override
-                public void onWZError(WZStatus wzStatus) {
-                    if(wzStatus.getLastError() != null){
-                        WritableMap error = Arguments.createMap();
-                        error.putString("error", wzStatus.getLastError().toString());
-                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_FAIL.toString(), error);
-                    }
-                }
-            });
-        }
-        else{
-            BroadcastManager.stopBroadcast(broadcast, new WZStatusCallback() {
-                @Override
-                public void onWZStatus(WZStatus wzStatus) {
-                    if(wzStatus.getState() == WZState.IDLE){
+                    } else if(wowzBroadcastStatus.isIdle()) {
                         WritableMap event = Arguments.createMap();
-                        WritableMap broadcast = Arguments.createMap();
-                        broadcast.putString("host", getHostAddress());
-                        broadcast.putString("broadcastName", getBroadcastName());
-                        broadcast.putString("status", "stopped");
-                        event.putMap("event", broadcast);
+                        WritableMap broadcastEventState = Arguments.createMap();
+                        broadcastEventState.putString("status", "stoped");
                         mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_STOP.toString(), event);
+                    }else if(wowzBroadcastStatus.isReady()) {
+                        WritableMap event = Arguments.createMap();
+                        WritableMap broadcastEventState = Arguments.createMap();
+                        broadcastEventState.putString("status", "ready");
+                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_STATUS_CHANGE.toString(), event);
                     }
                 }
 
                 @Override
-                public void onWZError(WZStatus wzStatus) {
-                    if(wzStatus.getLastError() != null){
+                public void onWZError(WOWZBroadcastStatus wowzBroadcastStatus) {
+                    Log.d("ReactNative", "WOWZStatus onWZError: "+String.valueOf(wowzBroadcastStatus));
+                    WritableMap event = Arguments.createMap();
+                    WritableMap broadcastEventState = Arguments.createMap();
+                    broadcastEventState.putString("status", "error");
+                    event.putMap("event", broadcastEventState);
+                    mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_ERROR.toString(), event);
+                }
+            });
+        } else {
+        if (broadcast.getStatus().isBroadcasting()) {
+            broadcast.endBroadcast(new WOWZStatusCallback() {
+
+                @Override
+                public void onWZStatus(WOWZStatus wzStatus) {
+
+                }
+
+                @Override
+                public void onWZError(WOWZStatus wzStatus) {
+                    if (wzStatus.getLastError() != null) {
                         WritableMap error = Arguments.createMap();
                         error.putString("error", wzStatus.getLastError().toString());
                         mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_FAIL.toString(), error);
                     }
                 }
             });
+        }else{
+            WOWZLog.error(TAG, "endBroadcast() called without an active broadcast");
         }
-        this.broadcasting = broadcasting;
+        }
+        broadcast.endBroadcast();
     }
 
     public boolean isFlashOn() {
@@ -265,8 +319,8 @@ public class BroadcastView extends FrameLayout implements LifecycleEventListener
     }
 
     public void setFlashOn(boolean flashOn) {
-        if(cameraView != null) {
-            BroadcastManager.turnFlash(cameraView, flashOn);
+        if(mWZCameraView != null) {
+            BroadcastManager.turnFlash(mWZCameraView, flashOn);
             this.flashOn = flashOn;
         }
     }
@@ -276,9 +330,14 @@ public class BroadcastView extends FrameLayout implements LifecycleEventListener
     }
 
     public void setFrontCamera(boolean frontCamera) {
-        if(cameraView != null) {
-            BroadcastManager.invertCamera(cameraView);
-            this.frontCamera = frontCamera;
+        if(mWZCameraView != null && mWZCameraView.isPreviewing()) {
+            int numCameras = WOWZCamera.getNumberOfDeviceCameras(localContext);
+
+            BroadcastManager.invertCamera(mWZCameraView);
+            Log.d("ReactNative", "Set front camera: "+String.valueOf(frontCamera));
+            if(numCameras > 1 ){
+                this.frontCamera = frontCamera;
+            }
         }
     }
 

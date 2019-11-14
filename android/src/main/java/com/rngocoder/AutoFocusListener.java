@@ -6,26 +6,26 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-import com.wowza.gocoder.sdk.api.devices.WZCamera;
-import com.wowza.gocoder.sdk.api.devices.WZCameraView;
-import com.wowza.gocoder.sdk.api.geometry.WZSize;
+import com.wowza.gocoder.sdk.api.devices.WOWZCamera;
+import com.wowza.gocoder.sdk.api.devices.WOWZCameraView;
+import com.wowza.gocoder.sdk.api.geometry.WOWZSize;
 
 public class AutoFocusListener extends GestureDetector.SimpleOnGestureListener {
 
     private Context         mContext    = null;
-    private WZCameraView    mCameraView = null;
+    private WOWZCameraView    mCameraView = null;
 
     public AutoFocusListener(Context context) {
         super();
         mContext = context;
     }
 
-    public AutoFocusListener(Context context, WZCameraView cameraView) {
+    public AutoFocusListener(Context context, WOWZCameraView cameraView) {
         this(context);
         mCameraView = cameraView;
     }
 
-    public void setCameraView(WZCameraView mCameraView) {
+    public void setCameraView(WOWZCameraView mCameraView) {
         this.mCameraView = mCameraView;
     }
 
@@ -41,14 +41,14 @@ public class AutoFocusListener extends GestureDetector.SimpleOnGestureListener {
     @Override
     public boolean onDoubleTap(MotionEvent event) {
         if (mCameraView != null) {
-            WZCamera activeCamera = mCameraView.getCamera();
+            WOWZCamera activeCamera = mCameraView.getCamera();
 
-            if (activeCamera != null && activeCamera.hasCapability(WZCamera.FOCUS_MODE_CONTINUOUS)) {
-                if (activeCamera.getFocusMode() != WZCamera.FOCUS_MODE_CONTINUOUS) {
-                    activeCamera.setFocusMode(WZCamera.FOCUS_MODE_CONTINUOUS);
+            if (activeCamera != null && activeCamera.hasCapability(WOWZCamera.FOCUS_MODE_CONTINUOUS)) {
+                if (activeCamera.getFocusMode() != WOWZCamera.FOCUS_MODE_CONTINUOUS) {
+                    activeCamera.setFocusMode(WOWZCamera.FOCUS_MODE_CONTINUOUS);
                     Toast.makeText(mContext, "Continuous video focus on", Toast.LENGTH_SHORT).show();
                 } else {
-                    activeCamera.setFocusMode(WZCamera.FOCUS_MODE_OFF);
+                    activeCamera.setFocusMode(WOWZCamera.FOCUS_MODE_OFF);
                     Toast.makeText(mContext, "Continuous video focus off", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -60,13 +60,13 @@ public class AutoFocusListener extends GestureDetector.SimpleOnGestureListener {
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         if (mCameraView != null) {
-            WZCamera activeCamera = mCameraView.getCamera();
+            WOWZCamera activeCamera = mCameraView.getCamera();
 
-            if (activeCamera != null && activeCamera.hasCapability(WZCamera.FOCUS_MODE_AUTO)) {
+            if (activeCamera != null && activeCamera.hasCapability(WOWZCamera.FOCUS_MODE_AUTO)) {
 
                 DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
-                WZSize previewScreenSize = mCameraView.getScreenSize();
-                WZSize previewFrameSize = mCameraView.getFrameSize();
+                WOWZSize previewScreenSize = mCameraView.getScreenSize();
+                WOWZSize previewFrameSize = mCameraView.getFrameSize();
 
                 int previewScreenLeft = Math.round((float) (displayMetrics.widthPixels - previewScreenSize.width) / 2f);
                 int previewScreenTop = Math.round((float) (displayMetrics.heightPixels - previewScreenSize.height) / 2f);

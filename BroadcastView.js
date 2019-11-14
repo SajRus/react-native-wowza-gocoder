@@ -14,7 +14,8 @@ export default class BroadcastView extends Component {
   setNativeProps(nativeProps) {
     this._root.setNativeProps(nativeProps);
   }
-  componentWillMount(){
+  componentDidMount(){
+    console.log('componentDidMount props', this.props)
     if(Platform.OS == 'android'){
       DeviceEventEmitter.addListener('broadcastTimer', (seconds) => {
         this.props.onBroadcastVideoEncoded({seconds:seconds})
@@ -66,6 +67,9 @@ export default class BroadcastView extends Component {
 
   _onBroadcastStop = (event) => {
     if (this.props.onBroadcastStop) {
+      if(Platform.OS == 'android'){
+        BroadcastManager.stopTimer();
+      }
       this.props.onBroadcastStop(event.nativeEvent);
     }
   };
@@ -81,8 +85,8 @@ export default class BroadcastView extends Component {
       onBroadcastErrorReceive: this._onBroadcastErrorReceive,
       onBroadcastVideoEncoded: this._onBroadcastVideoEncoded,
       onBroadcastStop: this._onBroadcastStop,
-
     });
+    console.log('render props', this.props)
 
     return (
         <RNBroadcastView
