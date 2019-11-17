@@ -32,6 +32,7 @@ public class RCTBroadcastView extends ViewGroupManager<BroadcastView>  {
     private static final String PROP_CAMERA = "frontCamera";
     private static final String PROP_MUTED = "muted";
     private static final String PROP_IN_BACKGROUND_MODE = "backgroundMode";
+    private static final String PROP_AUDIO_ONLY = "audioOnly";
 
 
     @Override
@@ -118,6 +119,10 @@ public class RCTBroadcastView extends ViewGroupManager<BroadcastView>  {
 
     }
 
+    @ReactProp(name = PROP_AUDIO_ONLY)
+    public void setAudioOnly(BroadcastView view, boolean audioOnly){
+        view.setAudioOnly(audioOnly);
+    }
 
 }
 
