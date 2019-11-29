@@ -259,30 +259,25 @@ public class BroadcastView extends FrameLayout implements LifecycleEventListener
                 public void onWZStatus(WOWZBroadcastStatus wowzBroadcastStatus) {
                     Log.d("ReactNative", String.format("WOWZStatus onWZStatus: %s", wowzBroadcastStatus));
                     if(wowzBroadcastStatus.isBroadcasting()) {
-                        WritableMap event = Arguments.createMap();
                         WritableMap broadcastEventState = Arguments.createMap();
                         broadcastEventState.putString("status", "started");
-                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_START.toString(), event);
+                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_START.toString(), broadcastEventState);
                     } else if(wowzBroadcastStatus.isIdle()) {
-                        WritableMap event = Arguments.createMap();
                         WritableMap broadcastEventState = Arguments.createMap();
                         broadcastEventState.putString("status", "stoped");
-                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_STOP.toString(), event);
+                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_STOP.toString(), broadcastEventState);
                     }else if(wowzBroadcastStatus.isReady()) {
-                        WritableMap event = Arguments.createMap();
                         WritableMap broadcastEventState = Arguments.createMap();
                         broadcastEventState.putString("status", "ready");
-                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_STATUS_CHANGE.toString(), event);
+                        mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_STATUS_CHANGE.toString(), broadcastEventState);
                     }
                 }
 
                 @Override
                 public void onWZError(WOWZBroadcastStatus wowzBroadcastStatus) {
-                    WritableMap event = Arguments.createMap();
                     WritableMap broadcastEventState = Arguments.createMap();
                     broadcastEventState.putString("status", "error");
-                    event.putMap("event", broadcastEventState);
-                    mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_ERROR.toString(), event);
+                    mEventEmitter.receiveEvent(getId(), Events.EVENT_BROADCAST_ERROR.toString(), broadcastEventState);
                 }
             });
         } else {
