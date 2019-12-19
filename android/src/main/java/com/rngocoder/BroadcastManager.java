@@ -57,7 +57,13 @@ public class BroadcastManager {
             }
             broadcastConfig.setOrientationBehavior(WOWZMediaConfig.ALWAYS_PORTRAIT);
 
-            broadcastConfig.setVideoFramerate(12);
+            // When it comes to security cameras, quality isn’t important.
+            // If the quality is important comment the successive 3 lines
+            broadcastConfig.setVideoKeyFrameInterval(4);
+            broadcastConfig.setVideoFramerate(10);
+            broadcastConfig.setAudioBitRate(22400);
+
+
 
             WOWZMediaConfig mediaConfig = getSizePresetWithInt(sizePreset);
 
@@ -70,7 +76,6 @@ public class BroadcastManager {
 
             broadcastConfig.setVideoBroadcaster(cameraView);
             broadcastConfig.setAudioBroadcaster(audioDevice);
-            broadcastConfig.setAudioBitRate(22400);
 
             broadcastConfig.setHostAddress(hostAddress);
             broadcastConfig.setUsername(username);
