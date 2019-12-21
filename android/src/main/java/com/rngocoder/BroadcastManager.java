@@ -58,9 +58,10 @@ public class BroadcastManager {
             broadcastConfig.setOrientationBehavior(WOWZMediaConfig.ALWAYS_PORTRAIT);
 
             // When it comes to security cameras, quality isn’t important.
-            // If the quality is important comment the successive 3 lines
-            broadcastConfig.setVideoKeyFrameInterval(4);
-            broadcastConfig.setVideoFramerate(10);
+            // If the quality is important comment the successive 3 linesok
+            // broadcastConfig.setVideoKeyFrameInterval(4);
+            broadcastConfig.setVideoBitRate(1000);
+            broadcastConfig.setVideoFramerate(15);
             broadcastConfig.setAudioBitRate(22400);
 
 
@@ -85,7 +86,7 @@ public class BroadcastManager {
         }
 
 
-        // Log.d("ReactNative", String.valueOf(broadcastConfig));
+       // Log.d("ReactNative", String.valueOf(broadcastConfig));
 
         return broadcastConfig;
     }
