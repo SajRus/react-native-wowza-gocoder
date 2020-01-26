@@ -18,7 +18,7 @@ Pod::Spec.new do |spec|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  spec.name           = "RNSoundRecorder"
+  spec.name           = "RNBroadcastView"
   spec.version        = package['version']
   spec.summary        = package['description']
   spec.license        = package['license']
@@ -83,7 +83,7 @@ Pod::Spec.new do |spec|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  spec.source       = { :git => "http://EXAMPLE/react-native-wowza-gocoder.git", :tag => "#{spec.version}" }
+  spec.source       = { :git => "https://github.com/SajRus/react-native-wowza-gocoder.git", :tag => "#{spec.version}" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -94,7 +94,7 @@ Pod::Spec.new do |spec|
   #  Not including the public_header_files will make all headers public.
   #
 
-  spec.source_files  = 'iOS/*.{h,m}'
+  spec.source_files  = 'ios/*.{h,m}'
 
   # spec.public_header_files = "Classes/**/*.h"
 
@@ -110,7 +110,7 @@ Pod::Spec.new do |spec|
   # spec.resource  = "icon.png"
   # spec.resources = "Resources/*.png"
 
-  # spec.preserve_paths = "FilesToSave", "MoreFilesToSave"
+  spec.preserve_paths = 'LICENSE', 'README.md', 'package.json', 'index.js'
 
 
   # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
