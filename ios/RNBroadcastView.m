@@ -12,7 +12,7 @@
 #import <React/UIView+React.h>
 #import "WMBroadcastView.h"
 #import "BroadcastManager.h"
-#import "WowzaGoCoderSDK.h"
+#import <WOWZASdk/WowzaGoCoderSDK.h>
 
 //static NSDictionary *onLoadParamsForSource()
 //{
@@ -161,33 +161,30 @@
     //show error
     self.onBroadcastFail(@{@"error":error.localizedDescription});
 }
--(void)broadcastStatusDidChange:(WOWZState)state{
+-(void)broadcastStatusDidChange:(WOWZBroadcastStatus *)goCoderStatus{
     NSString *stateString;
-    switch (state) {
-        case WOWZStateIdle:
+    switch (goCoderStatus.state) {
+        case WOWZBroadcastStateIdle:
             stateString = @"idle";
             self.onBroadcastStop(@{@"event":@{@"host":self.hostAddress, @"broadcastName":self.broadcastName, @"status": @"stopped"}});
             break;
-        case WOWZStateRunning:
+        case WOWZBroadcastStateBroadcasting:
             stateString = @"running";
             break;
-        case WOWZStateStarting:
-            stateString = @"starting";
-            break;
-        case WOWZStateStopping:
-            stateString = @"stopping";
+        case WOWZBroadcastStateReady:
+            stateString = @"ready";
             break;
         default:
             break;
     }
     
 }
--(void)broadcastDidReceiveEvent:(WOWZEvent)event andError:(NSError *)error{
+-(void)broadcastDidReceiveEvent:(WOWZBroadcastStatus *)goCoderStatus andError:(NSError *)error{
     if(error){
         self.onBroadcastErrorReceive(@{@"error":error.localizedDescription});
     }
     else{
-        self.onBroadcastEventReceive(@{@"event": [NSNumber numberWithInteger:event]});
+        self.onBroadcastEventReceive(@{@"event": [NSNumber numberWithInteger:goCoderStatus.error]});
         
     }
     
@@ -198,7 +195,7 @@
     }
 }
 -(void)brodcastVideoFrameWasEncoded:(NSInteger *)durationInSeconds{
-    self.onBroadcastVideoEncoded(@{@"seconds":[NSNumber numberWithInteger:durationInSeconds]});
+    self.onBroadcastVideoEncoded(@{@"seconds":[NSNumber numberWithInteger:*durationInSeconds]});
 }
 
 @end

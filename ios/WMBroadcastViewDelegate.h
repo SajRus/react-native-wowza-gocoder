@@ -6,14 +6,16 @@
 //  Copyright © 2016 Hugo Nagano. All rights reserved.
 //
 
+#import <WOWZASdk/WowzaGoCoderSDK.h>
+#import <WOWZASdk/WOWZError.h>
+#import <WOWZASdk/WOWZDataEvent.h>
 
-#import "WowzaGoCoder.h"
 @protocol WMBroadcastViewDelegate <NSObject>
 
 -(void)didStartBroacast;
 -(void)didFailToStartBroadcast:(NSError *)error;
--(void)broadcastStatusDidChange:(WOWZState)state;
--(void)broadcastDidReceiveEvent:(WOWZEvent)event andError:(NSError *)error;
+-(void)broadcastStatusDidChange:(WOWZBroadcastStatus *)state;
+-(void)broadcastDidReceiveEvent:(WOWZBroadcastStatus *)event andError:(NSError *)error;
 -(void)broadcastDidReceiveError:(NSError *) error;
 -(void)brodcastVideoFrameWasEncoded:(NSInteger *)durationInSeconds;
 @end

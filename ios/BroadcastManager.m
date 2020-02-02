@@ -9,7 +9,7 @@
 #import "BroadcastManager.h"
 #import "WMBroadcastView.h"
 #import <React/RCTConvert.h>
-#import "WowzaGoCoderSDK.h"
+#import <WOWZASdk/WowzaGoCoderSDK.h>
 
 @implementation RCTConvert(UIView)
 
@@ -111,7 +111,7 @@ static BroadcastManager *sharedMyManager = nil;
 
 +(WOWZBroadcastOrientation)getBroadcastOrientation:(NSString *)orientationString {
     if ([orientationString isEqualToString:@"landscape"]) {
-        return WOWZBroadcastOrientationAlwaysLandscape;
+        return WOWZBroadcastOrientationAlwaysLandscapeLeft;
     } else if ([orientationString isEqualToString:@"portrait"]) {
         return WOWZBroadcastOrientationAlwaysPortrait;
     }
