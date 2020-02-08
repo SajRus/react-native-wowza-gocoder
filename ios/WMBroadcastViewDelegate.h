@@ -6,9 +6,9 @@
 //  Copyright © 2016 Hugo Nagano. All rights reserved.
 //
 
-#import <WOWZASdk/WowzaGoCoderSDK.h>
-#import <WOWZASdk/WOWZError.h>
-#import <WOWZASdk/WOWZDataEvent.h>
+#import "WowzaGoCoderSDK.h"
+#import "WOWZError.h"
+#import "WOWZDataEvent.h"
 
 @protocol WMBroadcastViewDelegate <NSObject>
 

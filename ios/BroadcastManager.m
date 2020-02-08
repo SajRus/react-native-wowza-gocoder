@@ -9,7 +9,7 @@
 #import "BroadcastManager.h"
 #import "WMBroadcastView.h"
 #import <React/RCTConvert.h>
-#import <WOWZASdk/WowzaGoCoderSDK.h>
+#import "WowzaGoCoderSDK.h"
 
 @implementation RCTConvert(UIView)
 

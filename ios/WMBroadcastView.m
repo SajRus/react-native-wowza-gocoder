@@ -7,7 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import "WMBroadcastView.h"
-#import <WOWZASdk/WowzaGoCoderSDK.h>
+#import "WowzaGoCoderSDK.h"
 
 NSString * const BlackAndWhiteKey = @"BlackAndWhiteKey";
 @interface WMBroadcastView()<WOWZBroadcastStatusCallback, WOWZVideoSink, WOWZAudioSink, WOWZVideoEncoderSink, WOWZAudioEncoderSink>

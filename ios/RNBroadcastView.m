@@ -12,7 +12,7 @@
 #import <React/UIView+React.h>
 #import "WMBroadcastView.h"
 #import "BroadcastManager.h"
-#import <WOWZASdk/WowzaGoCoderSDK.h>
+#import "WowzaGoCoderSDK.h"
 
 //static NSDictionary *onLoadParamsForSource()
 //{
